@@ -6,13 +6,25 @@
 #define CTRL(x)     ((x) & 0x1f)
 #endif
 
-WINDOW *create_newwin(int height, int width, int starty, int startx);
-void destroy_win(WINDOW *local_win);
+typedef struct _win_border_struct {
+    chtype ls, rs, ts, bs,
+           tl, tr, bl, br;
+} WIN_BORDER;
+
+typedef struct _WIN_struct {
+    int startx, starty;
+    int height, width;
+    WIN_BORDER border;
+} WIN;
+
+void init_win_params(WIN* p_win);
+void print_win_params(WIN* p_win);
+void create_box(WIN* win, bool flag);
 
 int
 main(int argc, char *argv[])
 {
-    WINDOW *my_win;
+    WIN win;
     int ch;
     int quit = false;
     initscr();
@@ -20,15 +32,18 @@ main(int argc, char *argv[])
     cbreak();
     keypad(stdscr, TRUE);
 
-    printw("Type any character to see it in bold\n");
+    noecho();
+    init_pair(1, COLOR_CYAN, COLOR_BLACK);
+    init_win_params(&win);
+    print_win_params(&win);
 
+    attron(COLOR_PAIR(1));
+    printw("Press Ctrl-C or Q to exit");
 
-    int height = 3;
-    int width = 10;
-    int starty = (LINES - height) / 2;
-    int startx = (COLS - width) / 2;
     refresh();
-    my_win = create_newwin(height, width, starty, startx);
+    attroff(COLOR_PAIR(1));
+
+    create_box(&win, true);
 
     while(!quit) {
         ch = getch();
@@ -43,49 +58,88 @@ main(int argc, char *argv[])
                 quit = true;
                 break;
             case 'j':
-                destroy_win(my_win);
-                my_win = create_newwin(height, width, ++starty, startx);
-                break;
-            case 'k':
-                destroy_win(my_win);
-                my_win = create_newwin(height, width, --starty, startx);
+                create_box(&win, false);
+                ++win.starty;
+                create_box(&win, true);
                 break;
             case 'h':
-                destroy_win(my_win);
-                my_win = create_newwin(height, width, starty, --startx);
+                create_box(&win, false);
+                --win.startx;
+                create_box(&win, true);
                 break;
             case 'l':
-                destroy_win(my_win);
-                my_win = create_newwin(height, width, starty, ++startx);
+                create_box(&win, false);
+                ++win.startx;
+                create_box(&win, true);
                 break;
-            default:
-                printw("The pressed key is ");
-                attron(A_BOLD);
-                printw("%c", ch);
-                attroff(A_BOLD);
+            case 'k':
+                create_box(&win, false);
+                --win.starty;
+                create_box(&win, true);
+                break;
+
         }
-        refresh();
     }
     endwin();
-
     return 0;
 }
 
-WINDOW*
-create_newwin(int height, int width, int starty, int startx)
+void
+create_box(WIN* p_win, bool flag)
 {
-    WINDOW* local_win;
-    local_win = newwin(height, width, starty, startx);
-    box(local_win, 0, 0);
-    wrefresh(local_win);
-    return local_win;
+    int i, j;
+    int x, y, w, h;
+
+    x = p_win->startx;
+    y = p_win->starty;
+    w = p_win->width;
+    h = p_win->height;
+
+    if(flag == true) {
+        mvaddch(y, x, p_win->border.tl);
+        mvaddch(y, x + w, p_win->border.tr);
+        mvaddch(y + h, x, p_win->border.bl);
+        mvaddch(y + h, x + w, p_win->border.br);
+        mvhline(y, x + 1, p_win->border.ts, w -1);
+        mvhline(y + h, x + 1, p_win->border.bs, w - 1);
+        mvhline(y + 1, x, p_win->border.ls, h - 1);
+        mvhline(y + 1, x + w, p_win->border.rs, h - 1);
+    } else {
+        for(j = y; j <= y + h; ++j) {
+            for(i = x; i <= x + w; ++i) {
+                mvaddch(j, i, ' ');
+            } 
+        }
+    }
+    refresh();
 }
 
+void
+print_win_params(WIN* p_win)
+{
+#ifdef _DEBUG
+    mvprintw(25, 0, "%d %d %d %d", p_win->startx, p_win->starty,
+            p_wni->width, p_win->height
+            );
+
+    refresh();
+#endif
+}
 
 void
-destroy_win(WINDOW* local_win)
+init_win_params(WIN* p_win)
 {
-    wborder(local_win, ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ');
-    wrefresh(local_win);
-    delwin(local_win);
+    p_win->height = 3;
+    p_win->width = 10;
+    p_win->starty = (LINES - p_win->height) / 2;
+    p_win->startx = (COLS - p_win->width) / 2;
+
+    p_win->border.ls = '|';
+    p_win->border.rs = '|';
+    p_win->border.ts = '-';
+    p_win->border.bs = '-';
+    p_win->border.tl = '+';
+    p_win->border.tr = '+';
+    p_win->border.bl = '+';
+    p_win->border.br = '+';
 }
