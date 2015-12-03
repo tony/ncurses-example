@@ -27,19 +27,21 @@ main(int argc, char *argv[])
     WIN win;
     int ch;
     int quit = false;
+
     initscr();
     raw();
+    start_color();
     cbreak();
-    keypad(stdscr, TRUE);
 
+    keypad(stdscr, true);
     noecho();
     init_pair(1, COLOR_CYAN, COLOR_BLACK);
+
     init_win_params(&win);
     print_win_params(&win);
 
     attron(COLOR_PAIR(1));
     printw("Press Ctrl-C or Q to exit");
-
     refresh();
     attroff(COLOR_PAIR(1));
 
@@ -48,9 +50,6 @@ main(int argc, char *argv[])
     while(!quit) {
         ch = getch();
         switch(ch) {
-            case KEY_F(1):
-                printw("F1 Key pressed");
-                break;
             case 'q':
                 quit = true;
                 break;
@@ -102,8 +101,8 @@ create_box(WIN* p_win, bool flag)
         mvaddch(y + h, x + w, p_win->border.br);
         mvhline(y, x + 1, p_win->border.ts, w -1);
         mvhline(y + h, x + 1, p_win->border.bs, w - 1);
-        mvhline(y + 1, x, p_win->border.ls, h - 1);
-        mvhline(y + 1, x + w, p_win->border.rs, h - 1);
+        mvvline(y + 1, x, p_win->border.ls, h - 1);
+        mvvline(y + 1, x + w, p_win->border.rs, h - 1);
     } else {
         for(j = y; j <= y + h; ++j) {
             for(i = x; i <= x + w; ++i) {
