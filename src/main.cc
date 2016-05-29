@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <ncurses.h>
+#include "util.h"
 
 #ifndef CTRL
 #define CTRL(x) ((x)&0x1f)
@@ -20,7 +21,7 @@ void init_win_params(WIN* p_win);
 void print_win_params(WIN* p_win);
 void create_box(WIN* win, bool flag);
 
-int main(int argc, char* argv[]) {
+int main() {
   WIN win;
   int ch;
   int quit = false;
@@ -108,11 +109,13 @@ void create_box(WIN* p_win, bool flag) {
 }
 
 void print_win_params(WIN* p_win) {
-#ifdef _DEBUG
-  mvprintw(25, 0, "%d %d %d %d", p_win->startx, p_win->starty, p_wni->width,
+#ifdef DEBUG
+  mvprintw(25, 0, "%d %d %d %d", p_win->startx, p_win->starty, p_win->width,
            p_win->height);
 
   refresh();
+#else
+  UNUSED(p_win);
 #endif
 }
 
