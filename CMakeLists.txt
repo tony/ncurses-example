@@ -7,7 +7,7 @@ set(BIN_DIR ${app_SOURCE_DIR}/bin)
 
 # Bump up warning levels appropriately for clang, gcc & msvc and build in debug mode
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU" OR ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -std=c11")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -std=c++11")
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -g")
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -O2")
 elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC")
@@ -22,7 +22,7 @@ find_package(Curses REQUIRED)
 include_directories(${CURSES_INCLUDE_DIR})
 
 include_directories("./src")
-file (GLOB app_SOURCES src/*.c)
+file (GLOB app_SOURCES src/*.cc)
 
 add_executable(app ${app_SOURCES})
 target_link_libraries(app ${CURSES_LIBRARY})
