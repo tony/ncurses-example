@@ -1,8 +1,17 @@
+WATCH_FILES=find . -type f -not -path '*/\.*' -and -not -path '*/build/*' | grep -i '.*[.]\(c\|c\|h\)$$' 2> /dev/null
+
 all: build
 
 mkdir_build:
-	rm -rf build
-	mkdir -p build
+	[ -d ./build ] | mkdir -p build
+
+entr_warn:
+	@echo "----------------------------------------------------------"
+	@echo "     ! File watching functionality non-operational !      "
+	@echo ""
+	@echo "Install entr(1) to automatically run tasks on file change."
+	@echo "See http://entrproject.org/"
+	@echo "----------------------------------------------------------"
 
 build: mkdir_build
 	cd build; cmake ..
@@ -23,14 +32,8 @@ debug_ninja: mkdir_build
 format:
 	clang-format -style=Chromium src/* -i || clang-format37 -style=Chromium src/* -i
 
-run:
-	./build/game
-
 watch_debug:
-	if command -v entr > /dev/null; then find . -type f -not -path '*/\.*' -and -not -path '*/build/*' | grep -i '.*[.][c,cpp,h]' | entr -c make debug_ninja; else make debug_ninja; echo "\nInstall entr(1) to automatically run tests on file change.\n See http://entrproject.org/"; fi
-
-watch_run:
-	if command -v entr > /dev/null; then find . -type f -not -path '*/\.*' -and -not -path '*/build/*' | grep -i '.*[.][c,cpp,h]' | entr -c make debug_ninja run; else make debug_ninja run; echo "\nInstall entr(1) to automatically run tests on file change.\n See http://entrproject.org/"; fi
+	if command -v entr > /dev/null; then ${WATCH_FILES} | entr sh -c 'clear; $(MAKE) debug'; else $(MAKE) debug entr_warn; fi
 
 install_osx_deps:
 	brew install ninja entr
